@@ -1,0 +1,2 @@
+postgresql://feed_db_u7xh_user:EckfTrQvQYdM8cqbyRcOTgZx0L1kVdge@dpg-d32gp6bipnbc73d62qdg-a.oregon-postgres.render.com/feed_db_u7xh
+postgresql://feed_db_u7xh_user:EckfTrQvQYdM8cqbyRcOTgZx0L1kVdge@dpg-d32gp6bipnbc73d62qdg-a/feed_db_u7xh
