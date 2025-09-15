@@ -59,7 +59,6 @@
               {% set done = (TIMES | selectattr('__call__','equalto',None) | list) %}
               {% set count_done = (TIMES | map('string') | list | length) %}
               {% set n_done = (TIMES | map('string') | select('equalto', 'dummy') | list | length) %}
-              {# 簡易にPython書けないため、下でJSで完了率を計算する／見た目だけ先に配置 #}
               <span class="badge rounded-pill text-bg-primary-subtle text-primary-emphasis ytn-badge"
                     data-dog="{{ dog }}">– / –</span>
             </div>
@@ -87,7 +86,30 @@
       {% endfor %}
     </div>
 
-    <!-- ゴミ出しカード -->
+  <!-- てつの散歩 -->
+  <div class="row g-4 mt-2">
+    <div class="col-12 col-md-6 col-lg-4">
+      <div class="card ytn-card h-100 border-0 shadow-sm">
+        <div class="card-body d-flex flex-column">
+          <div class="d-flex align-items-center gap-2 mb-3">
+            <div class="avatar gradient"></div>
+            <h5 class="card-title mb-0">今日のてつんぽ</h5>
+          </div>
+          <a href="{{ url_for('main.toggle_take_walk') }}"
+            class="btn btn-lg ytn-toggle w-100 d-flex align-items-center justify-content-between
+                    {{ 'is-done' if take_walk else 'is-undone' }}">
+            <span class="d-flex align-items-center gap-2">
+              <i class="bi {{ 'bi-check-circle-fill' if take_walk else 'bi-circle' }}"></i>
+              <span class="fw-semibold">てつんぽ</span>
+            </span>
+            <span class="status text-muted small">{{ '完了' if take_walk else '未' }}</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ゴミ出しカード -->
   <div class="row g-4 mt-2">
     <div class="col-12 col-md-6 col-lg-4">
       <div class="card ytn-card h-100 border-0 shadow-sm">

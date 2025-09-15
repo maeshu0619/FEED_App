@@ -1,11 +1,11 @@
 from flask import Blueprint, render_template, redirect, url_for
-from .models import Feed, Trash
+from .models import Feed, Trash, Walk
 from . import db
 import datetime
 
 bp = Blueprint("main", __name__)
 
-DOGS = ["てつ", "ぽんず"]
+DOGS = ["ぽんず", "てつ"]
 TIMES = ["朝", "昼", "夜"]
 
 @bp.route("/initdb")
@@ -42,6 +42,14 @@ def toggle(dog, time):
     today = datetime.date.today().isoformat()
     feed = Feed.query.filter_by(date=today, dog=dog, time=time).first()
     feed.fed = not feed.fed
+    db.session.commit()
+    return redirect(url_for("main.index"))
+
+@bp.route("/toggle_take_walk")
+def toggle_take_walk():
+    today = datetime.date.today().isoformat()
+    walk = Walk.query.filter_by(date=today).first()
+    walk.taken = not walk.taken
     db.session.commit()
     return redirect(url_for("main.index"))
 

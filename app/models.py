@@ -9,6 +9,12 @@ class Feed(db.Model):
     time = db.Column(db.String)
     fed = db.Column(db.Boolean, default=False)
 
+class Walk(db.Model):
+    __tablename__ = "walk"
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.String, default=lambda: datetime.date.today().isoformat())
+    taken = db.Column(db.Boolean, default=False)
+
 class Trash(db.Model):
     __tablename__ = "trash"
     id = db.Column(db.Integer, primary_key=True)
