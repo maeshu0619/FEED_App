@@ -25,19 +25,23 @@ def index():
         for t in TIMES:
             if not Feed.query.filter_by(date=today, dog=dog, time=t).first():
                 db.session.add(Feed(date=today, dog=dog, time=t, fed=False))
+
     if not Trash.query.filter_by(date=today).first():
         db.session.add(Trash(date=today, taken=False))
+
     if not Walk.query.filter_by(date=today).first():
         db.session.add(Walk(date=today, taken=False))
     db.session.commit()
 
     feeds = Feed.query.filter_by(date=today).all()
+    walk = Walk.query.filter_by(date=today).first()
     trash = Trash.query.filter_by(date=today).first()
 
     state = {(f.dog, f.time): f.fed for f in feeds}
 
     return render_template("index.html", today=today, state=state,
-                           DOGS=DOGS, TIMES=TIMES, trash=trash.taken)
+                           DOGS=DOGS, TIMES=TIMES,
+                           trash=trash.taken, take_walk=walk.taken) 
 
 @bp.route("/toggle/<dog>/<time>")
 def toggle(dog, time):
