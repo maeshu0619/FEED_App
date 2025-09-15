@@ -27,6 +27,8 @@ def index():
                 db.session.add(Feed(date=today, dog=dog, time=t, fed=False))
     if not Trash.query.filter_by(date=today).first():
         db.session.add(Trash(date=today, taken=False))
+    if not Walk.query.filter_by(date=today).first():
+        db.session.add(Walk(date=today, taken=False))
     db.session.commit()
 
     feeds = Feed.query.filter_by(date=today).all()
