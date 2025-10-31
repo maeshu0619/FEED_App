@@ -1,5 +1,5 @@
 # 仮想環境
-venv/
+env/
 
 # Python キャッシュ
 __pycache__/
