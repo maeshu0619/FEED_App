@@ -87,50 +87,34 @@
     </div>
 
   <!-- てつの散歩 -->
+  <!-- 任意作業セクション -->
   <div class="row g-4 mt-2">
     <div class="col-12 col-md-6 col-lg-4">
       <div class="card ytn-card h-100 border-0 shadow-sm">
         <div class="card-body d-flex flex-column">
           <div class="d-flex align-items-center gap-2 mb-3">
             <div class="avatar gradient"></div>
-            <h5 class="card-title mb-0">今日のてつんぽ</h5>
+            <h5 class="card-title mb-0">通常業務</h5>
           </div>
-          <a href="{{ url_for('main.toggle_take_walk') }}"
-            class="btn btn-lg ytn-toggle w-100 d-flex align-items-center justify-content-between
-                    {{ 'is-done' if take_walk else 'is-undone' }}">
-            <span class="d-flex align-items-center gap-2">
-              <i class="bi {{ 'bi-check-circle-fill' if take_walk else 'bi-circle' }}"></i>
-              <span class="fw-semibold">てつんぽ</span>
-            </span>
-            <span class="status text-muted small">{{ '完了' if take_walk else '未' }}</span>
-          </a>
+          <div class="d-grid gap-2">
+            {% for task in OPTIONAL_TASKS %}
+              {% set done = optional_state[task] %}
+              <a href="{{ url_for('main.toggle_optional', task=task) }}"
+                class="btn btn-lg ytn-toggle w-100 d-flex align-items-center justify-content-between
+                        {{ 'is-done' if done else 'is-undone' }}">
+                <span class="d-flex align-items-center gap-2">
+                  <i class="bi {{ 'bi-check-circle-fill' if done else 'bi-circle' }}"></i>
+                  <span class="fw-semibold">{{ task }}</span>
+                </span>
+                <span class="status text-muted small">{{ '完了' if done else '未' }}</span>
+              </a>
+            {% endfor %}
+          </div>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- ゴミ出しカード -->
-  <div class="row g-4 mt-2">
-    <div class="col-12 col-md-6 col-lg-4">
-      <div class="card ytn-card h-100 border-0 shadow-sm">
-        <div class="card-body d-flex flex-column">
-          <div class="d-flex align-items-center gap-2 mb-3">
-            <div class="avatar gradient"></div>
-            <h5 class="card-title mb-0">今日のゴミ出し</h5>
-          </div>
-          <a href="{{ url_for('main.toggle_trash') }}"
-            class="btn btn-lg ytn-toggle w-100 d-flex align-items-center justify-content-between
-                    {{ 'is-done' if trash else 'is-undone' }}">
-            <span class="d-flex align-items-center gap-2">
-              <i class="bi {{ 'bi-check-circle-fill' if trash else 'bi-circle' }}"></i>
-              <span class="fw-semibold">ゴミ出し</span>
-            </span>
-            <span class="status text-muted small">{{ '完了' if trash else '未' }}</span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </div>
 
 
     <!-- Footer -->

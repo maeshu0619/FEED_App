@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, redirect, url_for
-from .models import Feed, Trash, Walk
+from .models import Feed, Trash, Walk, OptionalTask
 from . import db
 import datetime
 
@@ -7,6 +7,8 @@ bp = Blueprint("main", __name__)
 
 DOGS = ["ぽんず", "てつ"]
 TIMES = ["朝", "昼", "夜"]
+OPTIONAL_TASKS = ["てつんぽ", "ゴミ出し", "洗濯物取り込み"]
+
 
 @bp.route("/initdb")
 def initdb():
@@ -42,6 +44,12 @@ def index():
         for t in TIMES:
             if not Feed.query.filter_by(date=today, dog=dog, time=t).first():
                 db.session.add(Feed(date=today, dog=dog, time=t, fed=False))
+        # 任意作業（てつんぽ／ゴミ出し／洗濯物取り込み）の初期化
+    for task in OPTIONAL_TASKS:
+        if not OptionalTask.query.filter_by(date=today, name=task).first():
+            db.session.add(OptionalTask(date=today, name=task, done=False))
+    db.session.commit()
+
 
     if not Trash.query.filter_by(date=today).first():
         db.session.add(Trash(date=today, taken=False))
@@ -56,10 +64,16 @@ def index():
     trash = Trash.query.filter_by(date=today).first()
 
     state = {(f.dog, f.time): f.fed for f in feeds}
+    
+    optionals = OptionalTask.query.filter_by(date=today).all()
+    optional_state = {opt.name: opt.done for opt in optionals}
 
     return render_template("index.html", today=today, state=state,
                            DOGS=DOGS, TIMES=TIMES,
-                           trash=trash.taken, take_walk=walk.taken)
+                           trash=trash.taken, take_walk=walk.taken,
+                           OPTIONAL_TASKS=OPTIONAL_TASKS,
+                           optional_state=optional_state)
+
 
 
 @bp.route("/toggle/<dog>/<time>")
@@ -85,5 +99,13 @@ def toggle_trash():
     today = datetime.date.today().isoformat()
     trash = Trash.query.filter_by(date=today).first()
     trash.taken = not trash.taken
+    db.session.commit()
+    return redirect(url_for("main.index"))
+
+@bp.route("/toggle_optional/<task>")
+def toggle_optional(task):
+    today = datetime.date.today().isoformat()
+    record = OptionalTask.query.filter_by(date=today, name=task).first()
+    record.done = not record.done
     db.session.commit()
     return redirect(url_for("main.index"))
