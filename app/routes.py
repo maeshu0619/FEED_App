@@ -13,62 +13,35 @@ def initdb():
     db.create_all()
     return "✅ Tables created"
 
-def reset_for_today():
-    """DBの全データを削除し、当日分の初期レコードを作成する"""
-    # 全削除（テーブル構造は残す）
-    db.session.query(Feed).delete()
-    db.session.query(Trash).delete()
-    db.session.query(Walk).delete()
-    db.session.commit()
-
-    # 当日分を初期化
-    today = datetime.date.today().isoformat()
-    for dog in DOGS:
-        for t in TIMES:
-            db.session.add(Feed(date=today, dog=dog, time=t, fed=False))
-    db.session.add(Trash(date=today, taken=False))
-    db.session.add(Walk(date=today, taken=False))
-    db.session.commit()
-
-def ensure_today_exists():
-    """（保守用）当日分の行が欠けていれば補完する"""
-    today = datetime.date.today().isoformat()
-    for dog in DOGS:
-        for t in TIMES:
-            if not Feed.query.filter_by(date=today, dog=dog, time=t).first():
-                db.session.add(Feed(date=today, dog=dog, time=t, fed=False))
-    if not Trash.query.filter_by(date=today).first():
-        db.session.add(Trash(date=today, taken=False))
-    if not Walk.query.filter_by(date=today).first():
-        db.session.add(Walk(date=today, taken=False))
-    db.session.commit()
-
 @bp.route("/")
 def index():
-    # 初回アクセスでテーブル作成
+    # 初回アクセス時にテーブルを作成
     db.create_all()
 
     today = datetime.date.today().isoformat()
 
-    # 「今日のFeedが1件も無い」＝新しい日とみなす
-    is_new_day = not Feed.query.filter_by(date=today).first()
+    # 今日のレコードが無ければ初期化
+    for dog in DOGS:
+        for t in TIMES:
+            if not Feed.query.filter_by(date=today, dog=dog, time=t).first():
+                db.session.add(Feed(date=today, dog=dog, time=t, fed=False))
 
-    if is_new_day:
-        # 日付が変わった瞬間の最初のアクセス時にフルリセット＋初期化
-        reset_for_today()
-    else:
-        # 念のため欠けている行を補完
-        ensure_today_exists()
+    if not Trash.query.filter_by(date=today).first():
+        db.session.add(Trash(date=today, taken=False))
 
-    # 表示用データ取得
+    if not Walk.query.filter_by(date=today).first():
+        db.session.add(Walk(date=today, taken=False))
+    db.session.commit()
+
     feeds = Feed.query.filter_by(date=today).all()
     walk = Walk.query.filter_by(date=today).first()
     trash = Trash.query.filter_by(date=today).first()
+
     state = {(f.dog, f.time): f.fed for f in feeds}
 
     return render_template("index.html", today=today, state=state,
                            DOGS=DOGS, TIMES=TIMES,
-                           trash=trash.taken, take_walk=walk.taken)
+                           trash=trash.taken, take_walk=walk.taken) 
 
 @bp.route("/toggle/<dog>/<time>")
 def toggle(dog, time):
@@ -93,9 +66,3 @@ def toggle_trash():
     trash.taken = not trash.taken
     db.session.commit()
     return redirect(url_for("main.index"))
-
-@bp.route("/daily_reset")
-def daily_reset():
-    """手動・外部からも同じ挙動で初期化できるようにしておく"""
-    reset_for_today()
-    return "✅ Daily reset completed"
