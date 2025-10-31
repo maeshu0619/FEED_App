@@ -13,12 +13,29 @@ def initdb():
     db.create_all()
     return "✅ Tables created"
 
+
+def clean_old_data():
+    """
+    📅 今日より前の日付のデータを削除してDBをクリーンに保つ関数
+    （テーブル構造や今日のデータは保持）
+    """
+    today = datetime.date.today().isoformat()
+    # 前日以前のレコードを削除
+    db.session.query(Feed).filter(Feed.date != today).delete()
+    db.session.query(Trash).filter(Trash.date != today).delete()
+    db.session.query(Walk).filter(Walk.date != today).delete()
+    db.session.commit()
+
+
 @bp.route("/")
 def index():
     # 初回アクセス時にテーブルを作成
     db.create_all()
 
     today = datetime.date.today().isoformat()
+
+    # ★ 日付が変わっていたら古いデータをクリーンアップ
+    clean_old_data()
 
     # 今日のレコードが無ければ初期化
     for dog in DOGS:
@@ -33,6 +50,7 @@ def index():
         db.session.add(Walk(date=today, taken=False))
     db.session.commit()
 
+    # 表示データを取得
     feeds = Feed.query.filter_by(date=today).all()
     walk = Walk.query.filter_by(date=today).first()
     trash = Trash.query.filter_by(date=today).first()
@@ -41,7 +59,8 @@ def index():
 
     return render_template("index.html", today=today, state=state,
                            DOGS=DOGS, TIMES=TIMES,
-                           trash=trash.taken, take_walk=walk.taken) 
+                           trash=trash.taken, take_walk=walk.taken)
+
 
 @bp.route("/toggle/<dog>/<time>")
 def toggle(dog, time):
@@ -51,6 +70,7 @@ def toggle(dog, time):
     db.session.commit()
     return redirect(url_for("main.index"))
 
+
 @bp.route("/toggle_take_walk")
 def toggle_take_walk():
     today = datetime.date.today().isoformat()
@@ -58,6 +78,7 @@ def toggle_take_walk():
     walk.taken = not walk.taken
     db.session.commit()
     return redirect(url_for("main.index"))
+
 
 @bp.route("/toggle_trash")
 def toggle_trash():
